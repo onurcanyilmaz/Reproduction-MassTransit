@@ -20,6 +20,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using System.IO;
+using MassTransit;
+using Reproduction.Reproducing;
 
 namespace Reproduction.Web.Host.Startup
 {
@@ -55,6 +57,25 @@ namespace Reproduction.Web.Host.Startup
             AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddSignalR();
+
+            services.AddMassTransit(mass =>
+            {
+                mass.AddConsumer<ReproConsumer>();
+
+                mass.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    cfg.ReceiveEndpoint(queueName: "repro-service", e =>
+                    {
+                        e.ConfigureConsumer<ReproConsumer>(context);
+                    });
+                });
+            });
 
             // Configure CORS for angular2 UI
             services.AddCors(
@@ -124,7 +145,7 @@ namespace Reproduction.Web.Host.Startup
                 options.DisplayRequestDuration(); // Controls the display of the request duration (in milliseconds) for "Try it out" requests.  
             }); // URL: /swagger
         }
-        
+
         private void ConfigureSwagger(IServiceCollection services)
         {
             services.AddSwaggerGen(options =>

@@ -12,6 +12,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.6" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Reproduction.Core\Reproduction.Core.csproj" />
   </ItemGroup>
 </Project>
